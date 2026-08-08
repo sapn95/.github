@@ -102,6 +102,13 @@ whether is not.
 1. **Format and lint.** Non-negotiable and separate from the tests, so a
    formatting failure reads as a formatting failure. Run the formatter in check
    mode, never in write mode, in CI.
+
+   Where a repository has one script that runs everything — `npm run gate`,
+   `make check` — that script stays the local one-word command, and CI still
+   lists the steps individually. Each check is defined once either way; what
+   the workflow adds is a checks list where the red one names itself instead of
+   being a log to go and read. The release workflow is the exception and calls
+   the whole script, because there is nothing to diagnose at a glance there.
 2. **Tests, with a floor under the coverage.** A coverage number that is
    reported but not enforced is a number that goes down. The floor lives in the
    repository (a script, a config, a threshold flag), not in the workflow.
