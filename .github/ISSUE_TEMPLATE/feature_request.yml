@@ -1,0 +1,42 @@
+name: Feature request
+description: Something the project does not do yet.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem before the solution. The shape of the fix is
+        negotiable; the problem is what decides whether anything happens.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and where does the project get in the way?
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do about it today
+      description: The workaround, however ugly. It says a lot about how the real fix should look.
+    validations:
+      required: false
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: Optional. An idea is welcome but not required, and the problem above is the more useful half.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: offer
+    attributes:
+      label: Would you like to build it?
+      description: Entirely optional, and a "no" costs nothing. Anyone with a GitHub account may open a pull request.
+      options:
+        - label: I would be up for sending a pull request for this.
+          required: false

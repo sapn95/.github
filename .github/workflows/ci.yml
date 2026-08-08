@@ -1,0 +1,102 @@
+# This repository ships no code, only the defaults every other repository
+# inherits. What can break here is a template that stops parsing, and GitHub
+# reports that by silently dropping the form from the "New issue" page rather
+# than by failing anything. So the templates are parsed on every change.
+#
+# The frame below is the one described in CI.md. If the two ever disagree, this
+# file is the one that ran.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workflows:
+    name: lint workflows, yaml and markdown
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nothing here pushes, and the job token has no business sitting in
+          # .git/config while third-party actions run.
+          persist-credentials: false
+      - name: actionlint
+        uses: raven-actions/actionlint@v2.2.0
+      - name: yamllint
+        run: pipx run yamllint .
+      - name: markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v24
+
+  templates:
+    name: the issue forms still say what GitHub needs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: every form parses and carries name, description and a typed body
+        run: |
+          pip install --quiet pyyaml
+          python3 - <<'PY'
+          import pathlib
+          import sys
+
+          import yaml
+
+          # config.yml is not a form: it configures the chooser page, and its
+          # keys are entirely different ones.
+          forms = sorted(
+              p for p in pathlib.Path(".github/ISSUE_TEMPLATE").glob("*.yml")
+              if p.name != "config.yml"
+          )
+          if not forms:
+              sys.exit("no issue forms found — did the directory move?")
+
+          problems = []
+          for form in forms:
+              doc = yaml.safe_load(form.read_text())
+              for key in ("name", "description", "body"):
+                  if not doc.get(key):
+                      problems.append(f"{form}: missing {key}")
+              for i, item in enumerate(doc.get("body") or []):
+                  if "type" not in item:
+                      problems.append(f"{form}: body[{i}] has no type")
+              print(f"{form}: {len(doc.get('body') or [])} fields")
+
+          config = yaml.safe_load(pathlib.Path(".github/ISSUE_TEMPLATE/config.yml").read_text())
+          for i, link in enumerate(config.get("contact_links") or []):
+              missing = [k for k in ("name", "url", "about") if k not in link]
+              if missing:
+                  problems.append(f"config.yml: contact_links[{i}] missing {missing}")
+
+          if problems:
+              sys.exit("\n".join(problems))
+          print("the forms are intact")
+          PY
+
+  secrets:
+    name: secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # gitleaks reads history, not just the tip.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
