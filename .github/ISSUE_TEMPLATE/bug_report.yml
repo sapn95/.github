@@ -1,0 +1,78 @@
+name: Bug report
+description: Something behaves differently than it says on the tin.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The version, the platform and what you
+        expected are the three answers that turn a report into a fix.
+
+        Found a **vulnerability** instead? Close this and use
+        **Security → Report a vulnerability**, so it stays private.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Release tag, extension version, or the commit you are on.
+      placeholder: "v1.4.2, or 8f31c0d"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Operating system and version, plus the browser or runtime where that matters.
+      placeholder: "macOS 15.3 (Apple silicon), Firefox 134"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw. Error messages verbatim, please.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The shortest sequence that still shows the problem.
+      placeholder: |
+        1. …
+        2. …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or output
+      description: Pasted here, not as a screenshot. This is rendered as a code block, no backticks needed.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: hygiene
+    attributes:
+      label: Before you send it
+      options:
+        - label: I checked the open issues for this one already.
+          required: true
+        - label: >-
+            There is no real personal data in this report — no account numbers,
+            addresses, tokens or cookies, in the text or in a screenshot.
+          required: true

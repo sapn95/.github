@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # The actions in ci.yml are the only dependency this repository has. Weekly is
+  # often enough for a repository that runs three linters.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
