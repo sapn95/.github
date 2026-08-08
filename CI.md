@@ -115,6 +115,23 @@ whether is not.
 3. **The workflows themselves.** `actionlint`, `yamllint` and
    `markdownlint-cli2`, in one job called `workflows`. It costs about a minute
    and catches the class of mistake that is otherwise found by pushing.
+
+   Two settings on the actionlint step, the same in every repository, because a
+   linter configured differently per repository is not one linter:
+
+   ```yaml
+   env:
+     # Advisory below a warning: SC2016 fires on every `${{ }}` inside a
+     # single-quoted shell string, and nobody was going to act on those.
+     SHELLCHECK_OPTS: --severity=warning
+   with:
+     # Only where a workflow uses `concurrency.queue`, which is a documented
+     # key that actionlint's schema does not know. One token, no spaces: the
+     # action hands `flags` to actionlint without a shell parsing it, so a
+     # quoted pattern arrives split into pieces.
+     flags: -ignore unexpected.key.+queue
+   ```
+
 4. **A secret scan.** `gitleaks`, with `fetch-depth: 0` so it sees the history
    and not just the tip. Several of these projects handle credentials for real
    accounts; this is the cheapest guard there is against one ending up in a
