@@ -163,6 +163,55 @@ Same frame, plus:
   needs no secret at all; the alternative is a personal access token in every
   project, each of which expires separately.
 
+## Dependency updates
+
+**Dependabot does them.** It is GitHub's own, it needs no app installed, and
+every repository here carries the same `.github/dependabot.yml` — one grouped
+pull request per ecosystem per week, for the ecosystems that repository actually
+has and no others. An entry for something the repository does not use is a
+promise about nothing.
+
+**A patch or a minor merges itself; a major waits for a person.** That is
+`.github/workflows/dependabot-auto-merge.yml`, byte-identical everywhere:
+
+- `dependabot/fetch-metadata` reports the highest semver change in a grouped
+  pull request. Patch and minor get the `automerge-ok` label; nothing else does.
+- What "green" means is **read from branch protection at run time** — the
+  required contexts of `main`, whatever they are today. Writing check names into
+  the file is how twelve copies of it stop being one file.
+- Every commit on the branch must be authored by `dependabot[bot]` **and** carry
+  a valid signature. Anyone with push access can set a commit's email; nobody
+  else has Dependabot's key. The merge then uses `--match-head-commit`, so
+  anything pushed while the checks ran aborts it instead of riding in.
+- A daily sweep picks up pull requests whose checks finished after the poll gave
+  up. It trusts the label for the semver level and re-checks everything else.
+
+It is deliberately **not** a reusable workflow pulled from this repository. A
+workflow that merges to `main` on its own should not take its definition from
+somewhere else, or compromising one repository would compromise all of them.
+Twelve copies of a file that is verified in one place is the cheaper risk.
+
+### Why there is a `renovate.json` in repositories that do not use Renovate
+
+The Renovate app is installed on this account for **every** repository, and the
+only thing keeping it quiet is an account-wide **Silent** setting on the Mend
+dashboard. Silent means Renovate runs but opens no pull requests and no issues —
+which is exactly what an app that was never installed looks like, and the
+mistake is easy to make twice.
+
+That setting is one click from being changed, and the click would wake Renovate
+on repositories where Dependabot already does the work: two bots, one manifest,
+the same pull request twice. So every Dependabot-only repository carries a
+four-line `renovate.json` that says `"enabled": false`, with the reason in its
+`description`. The decision lives in git, where changing it is a pull request.
+
+`browser-in-a-box` is the one exception and its `renovate.json` is real. Three
+versions there are pinned **inside the source** rather than in a manifest — the
+kasmweb image tags, `GUEST_AGENT_VERSION`, the packer plugin — and only a regex
+manager can follow those. Dependabot has none; it is not a matter of
+configuration. Renovate keeps those three, Dependabot takes everything with a
+manifest behind it, and the two do not overlap.
+
 ## What is deliberately not standardised
 
 The build commands, the runner OS, the language version, the test framework,
