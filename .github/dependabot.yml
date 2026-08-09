@@ -1,10 +1,13 @@
 version: 2
+# One grouped pull request per ecosystem per week. A patch or a minor merges
+# itself once the required checks on `main` are green; a major is left open for
+# review. See .github/workflows/dependabot-auto-merge.yml for both halves of
+# that, and https://github.com/sapn95/.github/blob/main/CI.md for the rest.
 updates:
-  # The actions in ci.yml are the only dependency this repository has. Weekly is
-  # often enough for a repository that runs three linters.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-    commit-message:
-      prefix: chore
+    groups:
+      actions:
+        patterns: ["*"]
