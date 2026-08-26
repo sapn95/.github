@@ -171,25 +171,38 @@ pull request per ecosystem per week, for the ecosystems that repository actually
 has and no others. An entry for something the repository does not use is a
 promise about nothing.
 
-**A patch or a minor merges itself; a major waits for a person.** That is
-`.github/workflows/dependabot-auto-merge.yml`, byte-identical everywhere:
+**Every update merges itself once the checks are green — majors included.**
+That is `.github/workflows/dependabot-auto-merge.yml`, byte-identical
+everywhere:
 
-- `dependabot/fetch-metadata` reports the highest semver change in a grouped
-  pull request. Patch and minor get the `automerge-ok` label; nothing else does.
-- What "green" means is **read from branch protection at run time** — the
-  required contexts of `main`, whatever they are today. Writing check names into
-  the file is how twelve copies of it stop being one file.
+- The checks are the gate, whatever the semver level is (decided 2026-08-26:
+  every major the workflow ever held back was merged by a person whose whole
+  contribution was pressing the button after the checks had answered). A pull
+  request that genuinely needs a person first gets the `no-automerge` label,
+  and nothing touches it while the label is on.
+- What "green" means is GitHub's rollup for the exact commit: the pull request
+  must be mergeable, and every check that is not the auto-merge job itself
+  must have passed or been skipped. Check names are never written into the
+  file — that is how the copies of it stop being one file — and counting the
+  rollup also covers the repository without branch protection (the tap).
 - Every commit on the branch must be authored by `dependabot[bot]` **and** carry
   a valid signature. Anyone with push access can set a commit's email; nobody
   else has Dependabot's key. The merge then uses `--match-head-commit`, so
   anything pushed while the checks ran aborts it instead of riding in.
-- A daily sweep picks up pull requests whose checks finished after the poll gave
-  up. It trusts the label for the semver level and re-checks everything else.
+- A daily sweep merges every open Dependabot pull request that passes the same
+  vetting, for the runs where the checks finished after the poll gave up.
+
+Branch protection requires the checks but **not** an up-to-date branch. A
+Dependabot branch cannot be brought up to date automatically — a
+`GITHUB_TOKEN` push triggers no workflow runs, and Dependabot ignores rebase
+commands from bots — so a strict rule parks the second grouped update of the
+week until Dependabot's next weekly run. The post-merge `ci` run on `main` is
+the check on the combined result.
 
 It is deliberately **not** a reusable workflow pulled from this repository. A
 workflow that merges to `main` on its own should not take its definition from
 somewhere else, or compromising one repository would compromise all of them.
-Twelve copies of a file that is verified in one place is the cheaper risk.
+A dozen copies of a file that is verified in one place is the cheaper risk.
 
 ### Why there is a `renovate.json` in repositories that do not use Renovate
 
