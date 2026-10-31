@@ -41,7 +41,7 @@ jobs:
       - name: yamllint
         run: pipx run yamllint .
       - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v24
+        uses: DavidAnson/markdownlint-cli2-action@v25
 
   templates:
     name: the issue forms still say what GitHub needs
