@@ -225,6 +225,36 @@ manager can follow those. Dependabot has none; it is not a matter of
 configuration. Renovate keeps those three, Dependabot takes everything with a
 manifest behind it, and the two do not overlap.
 
+### The homelab repositories use Renovate instead
+
+Decided 2026-11-21: `homelab-gitops`, `pi-fedora-iot-k3s`, `gpu-ucore`,
+`aemtli`, `eso-proton-pass`, `budget` and `byge` move from Dependabot to
+Renovate. Most of what they pin sits where Dependabot does not look: chart
+versions and image tags inside Argo CD Applications, the k3s release in an
+upgrade Plan, Quadlet `Image=` lines, container images inside shell scripts.
+Renovate follows those with its Argo CD manager and regex managers, and one
+bot per repository is simpler than two that split the files between them.
+
+The behaviour stays what it was. One grouped pull request per manager per
+week, a three-day release age, and every update merges itself once all
+checks are green, majors included (`automerge`, `platformAutomerge: false`,
+the repository's merge method). The `no-automerge` label still holds a pull
+request: it is the repository's `stopUpdatingLabel`, and Renovate does not
+touch a pull request that carries it. `homelab-gitops` keeps its stricter
+rules, because a merge there is a deploy.
+
+The move goes in two steps per repository: first `renovate.json`, with
+Dependabot left in place, and once Renovate has opened its first pull request
+there, `dependabot.yml` and `dependabot-auto-merge.yml` go. `headlamp` is a
+plain mirror of its upstream with nothing of its own on `main`; it stays as
+it is, and Renovate skips forks unless a fork asks for it.
+
+None of this runs while the account is on Silent. Lifting Silent wakes
+Renovate in every repository, and today many of the Dependabot repositories
+do not carry the `"enabled": false` file described above. Either add it to
+them first, or set the homelab repositories to Interactive one by one in the
+Mend dashboard and leave the account on Silent.
+
 ## What is deliberately not standardised
 
 The build commands, the runner OS, the language version, the test framework,
